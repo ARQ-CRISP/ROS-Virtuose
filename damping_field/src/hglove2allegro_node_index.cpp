@@ -134,7 +134,7 @@ int main(int argc, char **argv)
 
 
   //OPTOFORCE SUBSCRIBERS
-  ros::Subscriber optoForce0_feedback = n_in.subscribe("/optoforce_wrench_0", 5, __OnOPTO0Contact);
+  ros::Subscriber optoForce0_feedback = n_in.subscribe("/optoforce_wrench_1", 5, __OnOPTO0Contact);
 
   // Reset virtuose_node
   virtuose::virtuose_reset res;
