@@ -322,6 +322,7 @@ else
 
     
     // std::cout << "FORCE PUB -- x : -- " << force.virtuose_force.force.x << " -- y : -- " << force.virtuose_force.force.y << "-- z : -- " << force.virtuose_force.force.z<< "\n \n";
+    // std::cout << "MIDDLE";
     in_virtuose_force.publish(force);
     
     ctr ++;
