@@ -22,6 +22,10 @@ float delta_pos_H[7];
 float delta_vel_H[7];
 uint64_t status_date;
 
+//SET THE FORCE FEEDBACK MODE 0 FALSE 1 TRUE
+int activate_spring_test=0;
+int activate_optoforce_wrench=1;
+
 
 int old_H_flag=0;
 uint64_t pose_date;
@@ -30,7 +34,7 @@ int dt=0.01;
 //Sping Only parameters: force limit=10; KK2=50
 float error_x=0, error_y =0, error_z= 0;
 float error_sensitivity=0.001;//0.01;
-float opto_sensitivity=50;
+float opto_sensitivity=0.50;
 float force_limit=10;
 float damping_coeff=0;//100;
 float damping_force[3];
@@ -48,7 +52,6 @@ float KK_curr=0;//1000;
 int status_state = 0;
 int status_button;
 float test_x,test_y,test_z;  
-
 
 ros::Publisher* _out_virtuose_delta_pose;
  
@@ -207,12 +210,7 @@ IMPEDANCE CONTROLLER
 
     // myfile << "cur_pose_H"<< "," <<cur_pose_H[0]<< "," << cur_pose_H[1]<< "," <<cur_pose_H[2]<< ","  ;
     // myfile << "old_pose_H"<< "," <<old_pose[0]<< "," << old_pose[1]<< "," <<old_pose[2]<< ","  ;
-    // myfile << "delta_pos H"<< "," <<delta_pos_H[0]<< "," << delta_pos_H[1]<< "," <<delta_pos_H[2]<< ",";
-
-
-//VIRTUAL ELONG FIXED FRAME VIRTUOSE
-// printf("initial pose: x %f - y %f - z %f \n",initial_pose_H[0],initial_pose_H[1],initial_pose_H[2]);
-// printf("cur_pose_H : x %f - y %f - z %f \n\n",cur_pose_H[0],cur_pose_H[1],cur_pose_H[2]);
+    // myfile << "delta_pos H"<< "," <<delta_pos_H[0]<< "," << delta_po   e_H[1],cur_pose_H[2]);
 
 virutal_elong__H[0]=-(initial_pose_H[0]-cur_pose_H[0]);
 virutal_elong__H[1]=-(initial_pose_H[1]-cur_pose_H[1]);
@@ -227,11 +225,18 @@ fixed_spring_x_force=KK_fix*(virutal_elong__H[0]);
 fixed_spring_y_force=KK_fix*(virutal_elong__H[1]);
 fixed_spring_z_force=KK_fix*(virutal_elong__H[2]);
 
-spring_force[0]=-(fixed_spring_x_force);
-spring_force[1]=-(fixed_spring_y_force);
-spring_force[2]=-(fixed_spring_z_force);
+if (activate_spring_test==1){
+spring_force[0]=-(fixed_spring_x_force)*5;//5 is a test to increase the force to reach the limit
+spring_force[1]=-(fixed_spring_y_force)*5;
+spring_force[2]=-(fixed_spring_z_force)*5;
 //printf("spring_force: x %f - y %f - z %f \n",spring_force[0],spring_force[1],spring_force[2]);
-
+}
+else if (activate_optoforce_wrench==1){
+  
+  spring_force[0]=- ( -(curr_wrench[2]))/10;
+  spring_force[1]=- ( -(curr_wrench[1]))/10;
+  spring_force[2]=0;// ( -(curr_wrench[0]))/10;//5 is a test to increase the force to reach the limit
+}
 /*
 
 BELOW FORCE SETTINGS AND SAFETY CHECKS
@@ -273,7 +278,7 @@ if (abs(curr_wrench[0])>opto_sensitivity||abs(curr_wrench[1])>opto_sensitivity||
   }     
 
 
-  //GENERATE Z FORCE
+  //GENERoATE Z FORCE
 
   force.virtuose_force.force.z = spring_force[2];
   if (force.virtuose_force.force.z > force_limit) //10 is a safety treshold
@@ -300,7 +305,7 @@ else
     test_x=force.virtuose_force.force.x;
     test_y=force.virtuose_force.force.y;
     test_z=force.virtuose_force.force.z;
-
+    
 
     if (abs(test_x)>force_limit || abs(test_y)>force_limit || abs(test_z)>force_limit)
       {
@@ -311,7 +316,7 @@ else
       }
 
     
-    //std::cout << "FORCE PUB -- x : -- " << force.virtuose_force.force.x << " -- y : -- " << force.virtuose_force.force.y << "-- z : -- " << force.virtuose_force.force.z<< "\n \n";
+    std::cout << "FORCE PUB -- x : -- " << force.virtuose_force.force.x << " -- y : -- " << force.virtuose_force.force.y << "-- z : -- " << force.virtuose_force.force.z<< "\n \n";
     in_virtuose_force.publish(force);
     
     ctr ++;

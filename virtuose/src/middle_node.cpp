@@ -161,7 +161,7 @@ void virtImpedanceCB(VirtContext VC, void *ignored)
     pose.virtuose_pose.rotation.y = disp[4];
     pose.virtuose_pose.rotation.z = disp[5];
     pose.virtuose_pose.rotation.w = disp[6];
-    // _out_virtuose_pose->publish(pose);
+    _out_virtuose_pose->publish(pose);
   }
 
   //joints status

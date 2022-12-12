@@ -22,6 +22,10 @@ float delta_pos_H[7];
 float delta_vel_H[7];
 uint64_t status_date;
 
+//SET THE FORCE FEEDBACK MODE 0 FALSE 1 TRUE
+int activate_spring_test=0;
+int activate_optoforce_wrench=1;
+
 
 int old_H_flag=0;
 uint64_t pose_date;
@@ -30,7 +34,7 @@ int dt=0.01;
 //Sping Only parameters: force limit=10; KK2=50
 float error_x=0, error_y =0, error_z= 0;
 float error_sensitivity=0.001;//0.01;
-float opto_sensitivity=50;
+float opto_sensitivity=0.50;
 float force_limit=10;
 float damping_coeff=0;//100;
 float damping_force[3];
@@ -49,7 +53,6 @@ int status_state = 0;
 int status_button;
 float test_x,test_y,test_z;  
 
-
 ros::Publisher* _out_virtuose_delta_pose;
  
 
@@ -58,6 +61,7 @@ float cur_pose[7], init_pose[7], delta_pose[7];
 bool init_pose_record=false;
 
 // ??tf2::Quaternion delta_quat, init_quat, cur_quat;
+
 
 
 
@@ -133,7 +137,7 @@ int main(int argc, char **argv)
 
 
   //OPTOFORCE SUBSCRIBERS
-  ros::Subscriber optoForce0_feedback = n_mid.subscribe("/optoforce_wrench_0", 5, __OnOPTO0Contact);
+  ros::Subscriber optoForce0_feedback = n_mid.subscribe("/optoforce_wrench_2", 5, __OnOPTO0Contact);
 
   // Reset virtuose_node
   virtuose::virtuose_reset res;
@@ -225,12 +229,19 @@ virutal_elong__H[2]=-(initial_pose_H[2]-cur_pose_H[2]);
 fixed_spring_x_force=KK_fix*(virutal_elong__H[0]);
 fixed_spring_y_force=KK_fix*(virutal_elong__H[1]);
 fixed_spring_z_force=KK_fix*(virutal_elong__H[2]);
+if (activate_spring_test==1){
 
-spring_force[0]=-(fixed_spring_x_force);
-spring_force[1]=-(fixed_spring_y_force);
-spring_force[2]=-(fixed_spring_z_force);
+spring_force[0]=-(fixed_spring_x_force)*5;
+spring_force[1]=-(fixed_spring_y_force)*5;
+spring_force[2]=-(fixed_spring_z_force)*5;
 //printf("spring_force: x %f - y %f - z %f \n",spring_force[0],spring_force[1],spring_force[2]);
-
+}
+else if (activate_optoforce_wrench==1){
+    
+  spring_force[0]=- ( -(curr_wrench[2]))/10;
+  spring_force[1]=- ( -(curr_wrench[1]))/10;
+  spring_force[2]=0;// ( -(curr_wrench[0]))/10;//5 is a test to increase the force to reach the limit
+}
 /*
 
 BELOW FORCE SETTINGS AND SAFETY CHECKS
